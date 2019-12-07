@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { setToLocalStorage, getFromLocalStorage} from '../../utils';
+import { setToLocalStorage, getFromLocalStorage, getBoards } from '../../utils';
+import { Boards } from '../Boards';
 
 const {REACT_APP_API_KEY, REACT_APP_APP_NAME, REACT_APP_REDIRECT_URL, REACT_APP_SCOPE} = process.env;
 const TOKEN_STORAGE_KEY = 'TOKEN';
@@ -13,7 +14,7 @@ interface Board {
 
 interface AppState {
   token: string;
-  boards: Array<Board>;
+  boards: Array<any>;
 }
 
 export class App extends React.Component<any, AppState> {
@@ -23,7 +24,10 @@ export class App extends React.Component<any, AppState> {
   }
 
   private async setToken(token: string) {
-    this.setState({token});
+    this.setState({
+      token,
+      boards: await getBoards(token, REACT_APP_API_KEY)
+    });
     await setToLocalStorage(TOKEN_STORAGE_KEY, token);
   }
 
@@ -53,7 +57,7 @@ export class App extends React.Component<any, AppState> {
   private renderContent() {
     return <main>
       {
-        this.isLoggedIn() ? <h2>Some secret content</h2> : <h2>Please login</h2>
+        this.isLoggedIn() ? <Boards boards={this.state.boards} /> : <h2>Please login</h2>
       }
     </main>
   }
@@ -62,6 +66,10 @@ export class App extends React.Component<any, AppState> {
     //const savedToken = await this.getToken();
     const newToken = this.getTokenFromUrl();
     this.setToken(newToken);
+    /*this.setState({
+      boards: getBoards(this.state.token, REACT_APP_API_KEY);
+    });*/
+    
   }
 
   public render() {
