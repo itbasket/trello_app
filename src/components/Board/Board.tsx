@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Card } from '../Card';
+import './Board.css';
 
 const { REACT_APP_API_KEY } = process.env;
 
@@ -29,35 +30,27 @@ export class Board extends React.Component<BoardProps, BoardState> {
 
     private getCards() {
         const { item, token } = this.props;
-        const cards = fetch(`https://trello.com//1/boards/${item.id}/cards?key=${REACT_APP_API_KEY}&token=${token}`)
-        .then(res => res.json())
-        .then(
-            (result) => {
-                console.log(result);
-                return result;
-            }
-        );
-    return cards;
-    }
-
-    private async setCards() {
-        this.setState({
-            cards: await this.getCards()
-        });
+        fetch(`https://trello.com//1/boards/${item.id}/cards?key=${REACT_APP_API_KEY}&token=${token}`)
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    this.setState({
+                        cards: result
+                    });
+                }
+            );
     }
 
     public componentDidMount() {
-        this.setCards();
+        this.getCards();
     }
 
     render() {
         const { item } = this.props;
-        console.log(this.state.cards);
-        return <div>
-            <h1>{item.name}</h1>
+        return <div className='board'>
+            <p>{item.name}</p>
             <div>
                 {this.state.cards.map(card => {
-                    console.log(card);
                     return (
                     <div>
                         <Card 
