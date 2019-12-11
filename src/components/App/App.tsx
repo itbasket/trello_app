@@ -2,7 +2,7 @@ import * as React from 'react';
 import { setToLocalStorage, getFromLocalStorage, getBoards } from '../../utils';
 import { Boards } from '../Boards';
 
-const {REACT_APP_API_KEY, REACT_APP_APP_NAME, REACT_APP_REDIRECT_URL, REACT_APP_SCOPE} = process.env;
+const { REACT_APP_API_KEY, REACT_APP_APP_NAME, REACT_APP_REDIRECT_URL, REACT_APP_SCOPE } = process.env;
 const TOKEN_STORAGE_KEY = 'TOKEN';
 
 interface Board {
@@ -57,7 +57,7 @@ export class App extends React.Component<any, AppState> {
   private renderContent() {
     return <main>
       {
-        this.isLoggedIn() ? <Boards boards={this.state.boards} /> : <h2>Please login</h2>
+        this.isLoggedIn() ? <Boards boards={this.state.boards} token={this.state.token}/> : <h2>Please login</h2>
       }
     </main>
   }
