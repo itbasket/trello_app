@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Board } from '../Board';
 
-interface BoardsProps {
+interface DashoardProps {
     boards: Array<any>;
     token: string;
 }
 
-export class Boards extends React.Component<BoardsProps, any> {
+export class Dashboard extends React.Component<DashoardProps, any> {
     
 
     public render() {
