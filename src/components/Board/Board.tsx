@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Card } from '../Card';
+import { List } from '../List';
+import './Board.css';
 
 const { REACT_APP_API_KEY } = process.env;
 
@@ -13,56 +14,50 @@ interface BoardProps {
     token: string;
 }
 
-interface CardItem {
+interface ListItem {
     id: string;
     name: string;
 }
 
 interface BoardState {
-    cards: Array<CardItem>;
+    lists: Array<ListItem>;
 }
 
 export class Board extends React.Component<BoardProps, BoardState> {
     public state: BoardState = {
-        cards: []
+        lists: []
     }
 
-    private getCards() {
+    private getLists() {
         const { item, token } = this.props;
-        const cards = fetch(`https://trello.com//1/boards/${item.id}/cards?key=${REACT_APP_API_KEY}&token=${token}`)
-        .then(res => res.json())
-        .then(
-            (result) => {
-                console.log(result);
-                return result;
-            }
-        );
-    return cards;
-    }
-
-    private async setCards() {
-        this.setState({
-            cards: await this.getCards()
-        });
+        fetch(`https://trello.com//1/boards/${item.id}/lists?cards=none&card_fields=all&filter=open&fields=all&key=${REACT_APP_API_KEY}&token=${token}`)
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    console.log(result)
+                    this.setState({
+                        lists: result
+                    });
+                }
+            );
     }
 
     public componentDidMount() {
-        this.setCards();
+        this.getLists();
     }
 
     render() {
-        const { item } = this.props;
-        console.log(this.state.cards);
-        return <div>
-            <h1>{item.name}</h1>
+        const { item, token } = this.props;
+        return <div className='board'>
+            <p>{item.name}</p>
             <div>
-                {this.state.cards.map(card => {
-                    console.log(card);
+                {this.state.lists.map(list => {
                     return (
-                    <div>
-                        <Card 
-                        key={card.id}
-                        item={card} 
+                    <div key={list.id}>
+                        <List
+                            item={list}
+                            token={token} 
+                            
                         />
                     </div>
                     );

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import './Card.css';
 
 interface Item {
     id: string;
@@ -13,8 +14,8 @@ export class Card extends React.Component<any, any> {
     
     render() {
         const { item } = this.props;
-        return <div>
-            <h3>{item.name}</h3>
+        return <div className='card'>
+            <p>{item.name}</p>
         </div>
     }
 }

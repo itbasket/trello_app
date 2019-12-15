@@ -1,44 +1,66 @@
 import * as React from 'react';
-import { setToLocalStorage, getFromLocalStorage, getBoards } from '../../utils';
-import { Dashboard } from '../Dashboard';
+import { Route, Link, RouteComponentProps, Redirect, Switch, RouteChildrenProps } from 'react-router-dom';
+import { setToLocalStorage, getFromLocalStorage } from '../../utils';
+import { routes, AppRoute, ROUTES_URLS } from './routes';
+import './App.css';
+import { OAuth } from '../OAuth/OAuth';
+import { ProtectedRoute } from '../ProtectedRoute';
 
 
 const { REACT_APP_API_KEY, REACT_APP_APP_NAME, REACT_APP_REDIRECT_URL, REACT_APP_SCOPE } = process.env;
 const TOKEN_STORAGE_KEY = 'TOKEN';
 
-interface Board {
-  id: string;
-  name: string;
-  pinned: boolean;
-  desc?: string;
-}
-
 interface AppState {
   token: string;
-  boards: Array<any>;
+  userProfile: any;
 }
 
 export class App extends React.Component<any, AppState> {
   public state = {
     token: '',
-    boards: []
+    userProfile: undefined
   }
 
   private async setToken(token: string) {
     this.setState({
-      token,
-      boards: await getBoards(token, REACT_APP_API_KEY)
+      token
     });
-    await setToLocalStorage(TOKEN_STORAGE_KEY, token);
+    setToLocalStorage(TOKEN_STORAGE_KEY, token);
   }
 
   private async getToken() {
-    const token = await getFromLocalStorage(TOKEN_STORAGE_KEY);
-    return token;
+    if (this.state.token) {
+      return;
+    }
+
+    const token = getFromLocalStorage(TOKEN_STORAGE_KEY);
+    if (!token) {
+      return this.navigateToLogin();
+    }
+
+    const url = `https://api.trello.com/1/members/me?key=${REACT_APP_API_KEY}&token=${token}`;
+    const response = await fetch(url);
+
+    if (response.ok === true && response.status === 200) {
+      const userProfile = await response.json();
+      this.setProfile(userProfile);
+      this.setToken(token);
+      return this.navigateToDashboard();
+    }
+
+    return this.navigateToLogin();
   }
 
-  private getTokenFromUrl() {
-    return window.location.hash.split('=')[1];
+  private navigateToLogin() {
+    this.props.history.push(ROUTES_URLS.LOGIN);
+  }
+
+  private navigateToDashboard() {
+    this.props.history.push(ROUTES_URLS.DASHBOARD);
+  }
+
+  private setProfile(userProfile: any) {
+    this.setState({userProfile});
   }
 
   private isLoggedIn() {
@@ -48,33 +70,45 @@ export class App extends React.Component<any, AppState> {
   private renderHeader() {
     const requestUrl = `https://trello.com/1/authorize?return_url=${REACT_APP_REDIRECT_URL}&expiration=1day&name=${REACT_APP_APP_NAME}&scope=${REACT_APP_SCOPE}&response_type=token&key=${REACT_APP_API_KEY}`;
     
-    return <header> 
-      {
-        this.isLoggedIn() ? 'Hello user' : <a href={requestUrl}>Login with Trello account</a>
-      }
+    return <header className='navbar text-light bg-primary'> 
+      <div className='navbar-text'>
+        {
+          routes.map((route: AppRoute, i: number) => route.isHidden ? null : <Link key={i} to={route.path}>{route.title}</Link>)
+        }
+      </div>
     </header>
   }
 
-  private renderContent() {
+  private renderContent = () => {
     return <main>
-      {
-        this.isLoggedIn() ? <Dashboard boards={this.state.boards} token={this.state.token}/> : <h2>Please login</h2>
-      }
+        <Switch>
+        {routes.map(this.renderRoute)}
+        <Route path="/oauth" render={(props: RouteChildrenProps) => <OAuth {...props} onSetToken={this.setToken} />} />
+        <Redirect to="/404" />
+      </Switch>
     </main>
   }
 
+  private renderRoute = (route: AppRoute, i: number) => {
+    if (route.isProtected) {
+      return <ProtectedRoute 
+        exact={route.exact}
+        key={i} path={route.path}
+        render={(props) => route.render({ ...props })} 
+        isAuthenticated={this.isLoggedIn()} />
+    } else {
+      return <Route
+        exact={route.exact}
+        key={i} path={route.path}
+        render={(props) => route.render({ ...props })} />
+    }
+  }
+
   public componentDidMount() {
-    //const savedToken = await this.getToken();
-    const newToken = this.getTokenFromUrl();
-    this.setToken(newToken);
-    /*this.setState({
-      boards: getBoards(this.state.token, REACT_APP_API_KEY);
-    });*/
-    
+    this.getToken();
   }
 
   public render() {
-    
     return <div>
       {this.renderHeader()}
       {this.renderContent()}
