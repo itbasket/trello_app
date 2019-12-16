@@ -3,6 +3,9 @@ import { Board } from '../Board';
 import { setToLocalStorage, getFromLocalStorage } from '../../utils';
 import { RouteChildrenProps } from 'react-router-dom';
 import './Dashboard.css';
+import { connect } from 'react-redux';
+import { AppState } from '../../store';
+import { increaseCount } from '../../store';
 
 const { REACT_APP_API_KEY } = process.env;
 const TOKEN_STORAGE_KEY = 'TOKEN';
@@ -10,9 +13,14 @@ const TOKEN_STORAGE_KEY = 'TOKEN';
 interface DashboardState {
   boards: Array<any>;
   token: any;
+  myCount?: number;
 }
 
-export class Dashboard extends React.Component<any, DashboardState> {
+interface DashboardProps {
+  onIncrease?: () => void
+}
+
+class Dashboard extends React.Component<DashboardProps, DashboardState> {
   public state: DashboardState = {
     boards: [],
     token: ''
@@ -51,3 +59,19 @@ export class Dashboard extends React.Component<any, DashboardState> {
     )
   }
 }
+
+const mapStateToProps = (state: AppState) => {
+  return {
+    myCount: state.count
+  }
+}
+
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    onIncrease: () => dispatch(increaseCount)
+  }
+}
+
+const ConnectedDashboard = connect(mapStateToProps, mapDispatchToProps)(Dashboard)
+
+export { ConnectedDashboard as Dashboard}
