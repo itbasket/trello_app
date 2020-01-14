@@ -4,8 +4,7 @@ import { setToLocalStorage, getFromLocalStorage } from '../../utils';
 import { RouteChildrenProps } from 'react-router-dom';
 import './Dashboard.css';
 import { connect } from 'react-redux';
-import { AppState } from '../../store';
-import { increaseCount } from '../../store';
+import { AppState, increaseCount, decreaseCount } from '../../store';
 
 const { REACT_APP_API_KEY } = process.env;
 const TOKEN_STORAGE_KEY = 'TOKEN';
@@ -16,8 +15,9 @@ interface DashboardState {
   myCount?: number;
 }
 
-interface DashboardProps {
-  onIncrease?: () => void
+interface DashboardProps extends RouteChildrenProps {
+  onIncrease?: () => void,
+  onDecrease?: () => void
 }
 
 class Dashboard extends React.Component<DashboardProps, DashboardState> {
@@ -68,7 +68,8 @@ const mapStateToProps = (state: AppState) => {
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    onIncrease: () => dispatch(increaseCount)
+    onIncrease: () => dispatch(increaseCount),
+    onDecrease: () => dispatch(decreaseCount)
   }
 }
 
