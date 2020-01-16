@@ -8,12 +8,24 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import './index.css';
 
 import { mainReducer } from './store';
+import { ACTION_TYPES } from './store/types';
+
+const asyncTimeout = async (fn: any, ms: number) => {
+    setTimeout(() => {
+        Promise.resolve(fn());
+    }, ms)
+}
 
 export const logger: Middleware = (middlewareApi: MiddlewareAPI) => (next: any) => {
-    return (action: any) => {
+    return async (action: any) => {
         //const { dispatch, getState } = middlewareApi;
-        console.log('ACTION', action, middlewareApi)
-        next(action);
+        if (action.type === ACTION_TYPES.INCREASE_COUNT) {
+            await asyncTimeout(() => {
+                console.log('fds');
+            },2000)
+        } else {
+            next(action);
+        }
     }
 }
 

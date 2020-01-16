@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Board } from '../Board';
-import { setToLocalStorage, getFromLocalStorage } from '../../utils';
+import { getFromLocalStorage } from '../../utils';
 import { RouteChildrenProps } from 'react-router-dom';
 import './Dashboard.css';
 import { connect } from 'react-redux';
